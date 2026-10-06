@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Клавіо-Джуніор | Тренажер друку для 4 класу</title>
+  <meta name="description" content="Тренажер швидкості друку для учнів 4 класу. 3 хвилини, прості речення українською та англійською мовами.">
+  <meta name="theme-color" content="#f0f9ff">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --error: #ef4444;
+      --error-bg: #fecaca;
+      --border: #e2e8f0;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --radius: 12px;
+    }
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #60a5fa;
+      --primary-hover: #3b82f6;
+      --border: #334155;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 0 16px; width: 100%; }
+    
+    /* Header */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+      box-shadow: var(--shadow);
+    }
+    .header-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .controls { display: flex; gap: 8px; align-items: center; }
+    
+    /* Buttons */
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+    }
+    .btn:hover { background: var(--bg); border-color: var(--primary); }
+    .btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1.1rem;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .icon-btn {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      padding: 0;
+      font-size: 1.2rem;
+    }
+
+    /* Main */
+    main { flex: 1; padding: 32px 0; display: flex; flex-direction: column; gap: 24px; }
+    
+    /* Stats Bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 16px;
+      background: var(--surface);
+      padding: 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.2;
+    }
+    .stat-value.time { color: var(--error); }
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    /* Typing Area */
+    .typing-area {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      padding: 32px;
+      position: relative;
+      min-height: 200px;
+      cursor: text;
+    }
+    .typing-area:focus-within { border-color: var(--primary); outline: 2px solid var(--primary); outline-offset: 2px; }
+    .typing-text {
+      font-size: 1.6rem;
+      line-height: 1.8;
+      font-family: 'Courier New', Courier, monospace;
+      word-break: break-word;
+      user-select: none;
+    }
+    .typing-text span { position: relative; }
+    .typing-text span.correct { color: var(--success); }
+    .typing-text span.incorrect {
+      color: var(--error);
+      background: var(--error-bg);
+      border-radius: 4px;
+    }
+    .typing-text span.active {
+      border-left: 2px solid var(--primary);
+      animation: blink 1s infinite;
+    }
+    @keyframes blink { 50% { border-color: transparent; } }
+
+    /* Hidden Input for Mobile Keyboard Support */
+    .input-field {
+      position: absolute;
+      opacity: 0;
+      z-index: -1;
+      top: 0; left: 0;
+    }
+
+    /* Instructions */
+    .instructions {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    .instructions strong { color: var(--text); }
+
+    /* Modal / Summary */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 32px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+      transform: translateY(20px);
+      transition: transform 0.3s;
+    }
+    .modal-overlay.show .modal { transform: translateY(0); }
+    .modal h2 { font-size: 1.8rem; margin-bottom: 8px; color: var(--primary); }
+    .modal p { color: var(--text-muted); margin-bottom: 24px; }
+    .modal-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .modal-stat {
+      background: var(--bg);
+      padding: 16px;
+      border-radius: 8px;
+    }
+    .modal-stat .stat-value { font-size: 1.5rem; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 24px 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border);
+      margin-top: auto;
+    }
+
+    @media (max-width: 600px) {
+      .typing-text { font-size: 1.2rem; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .modal-stats { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-inner">
+      <a href="#" class="brand">
+        <span>⌨️</span> Клавіо-Джуніор
+      </a>
+      <div class="controls">
+        <button class="btn active" id="lang-ua" onclick="setLanguage('ua')">🇺🇦 UA</button>
+        <button class="btn" id="lang-en" onclick="setLanguage('en')">🇬🇧 EN</button>
+        <button class="btn icon-btn" id="theme-toggle" onclick="toggleTheme()" aria-label="Змінити тему">🌓</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-value time" id="time">3:00</div>
+        <div class="stat-label">Час</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="wpm">0</div>
+        <div class="stat-label">Слів/хв</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="accuracy">100%</div>
+        <div class="stat-label">Точність</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="errors" style="color: var(--error);">0</div>
+        <div class="stat-label">Помилки</div>
+      </div>
+    </div>
+
+    <div class="typing-area" id="typing-area" onclick="focusInput()">
+      <input type="text" class="input-field" id="input-field" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="typing-text" id="typing-text"></div>
+    </div>
+
+    <div style="display: flex; gap: 12px; justify-content: center;">
+      <button class="btn btn-primary" onclick="resetGame()">🔄 Почати заново</button>
+    </div>
+
+    <div class="instructions">
+      <p><strong>Як тренуватися:</strong></p>
+      <ul style="margin-left: 20px; margin-top: 8px; display: grid; gap: 8px;">
+        <li>Клікни на текст або натисни будь-яку клавішу, щоб почати.</li>
+        <li>Друкуй уважно: помилкові літери підсвічуються <span style="color: var(--error); background: var(--error-bg); padding: 0 4px; border-radius: 4px;">червоним</span>.</li>
+        <li>Використовуй клавішу <strong>Backspace</strong>, щоб виправити помилку.</li>
+        <li>Мета: надрукувати якомога більше за <strong>3 хвилини</strong> з мінімумом помилок!</li>
+      </ul>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>© <span id="current-year">2026</span> Комп’ютерна наука з Паном Артемом. Тренажер для 4 класу.</p>
+    </div>
+  </footer>
+
+  <!-- Results Modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <h2 id="modal-title">Час вийшов! ⏰</h2>
+      <p id="modal-message">Чудова робота! Ось твої результати:</p>
+      <div class="modal-stats">
+        <div class="modal-stat">
+          <div class="stat-value" id="modal-wpm">0</div>
+          <div class="stat-label">Слів/хв</div>
+        </div>
+        <div class="modal-stat">
+          <div class="stat-value" id="modal-accuracy">0%</div>
+          <div class="stat-label">Точність</div>
+        </div>
+        <div class="modal-stat">
+          <div class="stat-value" id="modal-errors" style="color: var(--error);">0</div>
+          <div class="stat-label">Помилки</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="closeModalAndReset()" style="width: 100%;">Спробувати ще раз</button>
+    </div>
+  </div>
+
+  <script>
+    // --- Data ---
+    const sentencesUA = [
+      "Сонце яскраво світить на блакитному небі.",
+      "Мій пухнастий кіт любить спати на м'якому дивані.",
+      "Ми читаємо цікаві книги в шкільній бібліотеці.",
+      "Завтра ми підемо на веселу прогулянку в парк.",
+      "Вода в чистому озері була дуже прозора.",
+      "Птахи голосно співають ранком на гілках дерев.",
+      "Я дуже люблю малювати квіти та зелені дерева.",
+      "Учні уважно слухають вчителя на кожному уроці.",
+      "На сніданок мама приготувала смачні млинці.",
+      "Восени листя стає жовтим і червоним."
+    ];
+
+    const sentencesEN = [
+      "The sun shines brightly in the blue sky.",
+      "My fluffy cat loves to sleep on the soft sofa.",
+      "We read interesting books in the school library.",
+      "Tomorrow we will go for a fun walk in the park.",
+      "The water in the clean lake was very clear.",
+      "Birds sing loudly in the morning on tree branches.",
+      "I really like to draw flowers and green trees.",
+      "Students listen carefully to the teacher in class.",
+      "Mom made delicious pancakes for breakfast today.",
+      "In autumn the leaves become yellow and red."
+    ];
+
+    // --- State ---
+    let currentLang = 'ua';
+    let timeLeft = 180; // 3 minutes in seconds
+    let timer = null;
+    let isTyping = false;
+    let charIndex = 0;
+    let mistakes = 0;
+    let correctChars = 0;
+    let currentText = "";
+
+    // --- DOM Elements ---
+    const typingText = document.getElementById('typing-text');
+    const inputField = document.getElementById('input-field');
+    const timeTag = document.getElementById('time');
+    const wpmTag = document.getElementById('wpm');
+    const accuracyTag = document.getElementById('accuracy');
+    const errorTag = document.getElementById('errors');
+    const modalOverlay = document.getElementById('modal-overlay');
+
+    // --- Initialization ---
+    function init() {
+      document.getElementById('current-year').textContent = new Date().getFullYear();
+      loadParagraph();
+      
+      // Check system theme preference
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.getElementById('lang-ua').classList.toggle('active', lang === 'ua');
+      document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+      resetGame();
+    }
+
+    function loadParagraph() {
+      const sentences = currentLang === 'ua' ? sentencesUA : sentencesEN;
+      // Pick 3-4 random sentences to form a block
+      const shuffled = [...sentences].sort(() => 0.5 - Math.random());
+      const selected = shuffled.slice(0, 4);
+      currentText = selected.join(' ');
+      
+      typingText.innerHTML = "";
+      currentText.split('').forEach(char => {
+        const span = document.createElement('span');
+        span.innerText = char;
+        typingText.appendChild(span);
+      });
+      typingText.querySelectorAll('span')[0].classList.add('active');
+      
+      // Focus input for immediate typing
+      setTimeout(() => inputField.focus(), 100);
+    }
+
+    function focusInput() {
+      inputField.focus();
+    }
+
+    // --- Core Logic ---
+    function initTyping() {
+      if (!isTyping) {
+        isTyping = true;
+        timer = setInterval(updateTimer, 1000);
+      }
+
+      const chars = typingText.querySelectorAll('span');
+      let typedChar = inputField.value.split('')[charIndex];
+
+      // Handle backspace (inputType is not always reliable across all mobile browsers, so we check length)
+      if (inputField.value.length < charIndex) {
+        charIndex--;
+        chars[charIndex].classList.remove('correct', 'incorrect');
+        chars[charIndex].classList.add('active');
+        if (chars[charIndex + 1]) chars[charIndex + 1].classList.remove('active');
+        return;
+      }
+
+      if (typedChar == null) return; // Safety check
+
+      if (chars[charIndex].innerText === typedChar) {
+        chars[charIndex].classList.add('correct');
+        correctChars++;
+      } else {
+        chars[charIndex].classList.add('incorrect');
+        mistakes++;
+      }
+      
+      chars[charIndex].classList.remove('active');
+      charIndex++;
+
+      if (charIndex < chars.length) {
+        chars[charIndex].classList.add('active');
+      } else {
+        // End of text reached before time limit
+        finishGame(true);
+      }
+
+      updateStats();
+    }
+
+    function updateTimer() {
+      if (timeLeft > 0) {
+        timeLeft--;
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        timeTag.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+        updateStats();
+      } else {
+        finishGame(false);
+      }
+    }
+
+    function updateStats() {
+      // WPM: (correct characters / 5) / (time elapsed in minutes)
+      const timeElapsed = 180 - timeLeft;
+      let wpm = 0;
+      if (timeElapsed > 0) {
+        wpm = Math.round(((correctChars) / 5) / (timeElapsed / 60));
+      }
+      
+      // Accuracy
+      let accuracy = 100;
+      if (charIndex > 0) {
+        accuracy = Math.max(0, Math.round(((charIndex - mistakes) / charIndex) * 100));
+      }
+
+      wpmTag.innerText = wpm;
+      accuracyTag.innerText = accuracy + '%';
+      errorTag.innerText = mistakes;
+    }
+
+    function finishGame(completedEarly) {
+      clearInterval(timer);
+      isTyping = false;
+      inputField.blur();
+      
+      document.getElementById('modal-wpm').innerText = wpmTag.innerText;
+      document.getElementById('modal-accuracy').innerText = accuracyTag.innerText;
+      document.getElementById('modal-errors').innerText = errorTag.innerText;
+      
+      if (completedEarly) {
+        document.getElementById('modal-title').innerText = "Молодець! 🎉";
+        document.getElementById('modal-message').innerText = "Ти встиг надрукувати весь текст! Ось твої результати:";
+      } else {
+        document.getElementById('modal-title').innerText = "Час вийшов! ⏰";
+        document.getElementById('modal-message').innerText = "Чудова робота! Ось твої результати за 3 хвилини:";
+      }
+      
+      modalOverlay.classList.add('show');
+    }
+
+    function resetGame() {
+      clearInterval(timer);
+      timeLeft = 180;
+      isTyping = false;
+      charIndex = 0;
+      mistakes = 0;
+      correctChars = 0;
+      inputField.value = "";
+      timeTag.innerText = "3:00";
+      wpmTag.innerText = "0";
+      accuracyTag.innerText = "100%";
+      errorTag.innerText = "0";
+      loadParagraph();
+    }
+
+    function closeModalAndReset() {
+      modalOverlay.classList.remove('show');
+      resetGame();
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
+
+    // --- Event Listeners ---
+    inputField.addEventListener('input', initTyping);
+    
+    // Prevent pasting to ensure actual typing practice
+    inputField.addEventListener('paste', (e) => {
+      e.preventDefault();
+      alert("Будь ласка, друкуй текст самостійно, а не вставляй його! 😊");
+    });
+
+    // Keep focus on input when clicking anywhere in the typing area
+    document.addEventListener('keydown', () => {
+      if (!modalOverlay.classList.contains('show')) {
+        inputField.focus();
+      }
+    });
+
+    // Start
+    init();
+  </script>
+</body>
+</html>
